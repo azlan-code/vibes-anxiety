@@ -32,10 +32,10 @@ func (s *Server) TimelineHandler(w http.ResponseWriter, r *http.Request) {
 	db := s.db.GetDB()
 	ctx := r.Context()
 
-	thirtyDaysAgo := time.Now().AddDate(0, 0, -30).Format("2006-01-02")
+	thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
 
 	query := `
-        SELECT coordinates[0] as longitude, coordinates[1] as latitude, iso3, city, day, score
+        SELECT longitude, latitude, iso3, city, day, score
         FROM location_vibes
         WHERE day >= $1
         ORDER BY iso3, day
@@ -51,11 +51,13 @@ func (s *Server) TimelineHandler(w http.ResponseWriter, r *http.Request) {
 	var records []VibeRecord
 	for rows.Next() {
 		var record VibeRecord
-		err := rows.Scan(&record.Longitude, &record.Latitude, &record.ISO3, &record.City, &record.Day, &record.Score)
+		var dayTime time.Time
+		err := rows.Scan(&record.Longitude, &record.Latitude, &record.ISO3, &record.City, &dayTime, &record.Score)
 		if err != nil {
 			http.Error(w, "Error scanning row: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+		record.Day = dayTime.Format("2006-01-02")
 		records = append(records, record)
 	}
 
@@ -91,13 +93,20 @@ func (s *Server) VibePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse the day string into time.Time
+	dayTime, err := time.Parse("2006-01-02", vibe.Day)
+	if err != nil {
+		http.Error(w, "Invalid day format, expected YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
+
 	query := `
-        INSERT INTO location_vibes (iso3, city, coordinates, day, score)
-        VALUES ($1, $2, POINT($3, $4), $5, $6)
-        ON CONFLICT (coordinates, day) DO UPDATE SET score = EXCLUDED.score
+        INSERT INTO location_vibes (iso3, city, longitude, latitude, day, score)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (longitude, latitude, day) DO UPDATE SET score = EXCLUDED.score
     `
 
-	_, err = db.Exec(ctx, query, vibe.ISO3, vibe.City, vibe.Longitude, vibe.Latitude, vibe.Day, vibe.Score)
+	_, err = db.Exec(ctx, query, vibe.ISO3, vibe.City, vibe.Longitude, vibe.Latitude, dayTime, vibe.Score)
 	if err != nil {
 		http.Error(w, "Error inserting data: "+err.Error(), http.StatusInternalServerError)
 		return

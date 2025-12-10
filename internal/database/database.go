@@ -53,8 +53,6 @@ func NewDatabase(cfg *config.Config) Service {
 		log.Fatalf("timescale migration failed: %v", err)
 	}
 
-	//
-
 	dbInstance = &service{
 		db: pool,
 	}
@@ -68,9 +66,9 @@ func ensureTimescale(ctx context.Context, db *pgxpool.Pool) error {
 
 func (s *service) AddVibeRecord(ctx context.Context, iso3 string, city string, longitude float64, latitude float64, day time.Time, score float64) error {
 	query := `
-		INSERT INTO location_vibes (iso3, city, coordinates, day, score)
-		VALUES ($1, $2, POINT($3, $4), $5, $6)
-		ON CONFLICT (coordinates, day) DO UPDATE SET score = EXCLUDED.score
+		INSERT INTO location_vibes (iso3, city, longitude, latitude, day, score)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		ON CONFLICT (longitude, latitude, day) DO UPDATE SET score = EXCLUDED.score
 	`
 
 	_, err := s.db.Exec(ctx, query, iso3, city, longitude, latitude, day, score)
