@@ -1,0 +1,116 @@
+[
+    {
+        "city": "New York",
+        "iso3": "USA",
+        "latitude": 40.7130,
+        "longitude": -73.9967
+    },
+    {
+        "city": "Los Angeles",
+        "iso3": "USA",
+        "latitude": 34.0407,
+        "longitude": -118.2668
+    },
+    {
+        "city": "Chicago",
+        "iso3": "USA",
+        "latitude": 41.8373,
+        "longitude": -87.6862
+    },
+    {
+        "city": "Miami",
+        "iso3": "USA",
+        "latitude": 25.8030,
+        "longitude": -80.2044
+    },
+    {
+        "city": "Mexico City",
+        "iso3": "MEX",
+        "latitude": 19.4118,
+        "longitude": -99.1324
+    },
+    {
+        "city": "Bogotá",
+        "iso3": "COL",
+        "latitude": 4.6520,
+        "longitude": -74.0830
+    },
+    {
+        "city": "São Paulo",
+        "iso3": "BRA",
+        "latitude": -23.5635,
+        "longitude": -46.6541
+    },
+    {
+        "city": "Lagos",
+        "iso3": "NGA",
+        "latitude": 6.4655,
+        "longitude": 3.4064
+    },
+    {
+        "city": "Cairo",
+        "iso3": "EGY",
+        "latitude": 30.0440,
+        "longitude": 31.2400
+    },
+    {
+        "city": "Johannesburg",
+        "iso3": "ZAF",
+        "latitude": -26.1710,
+        "longitude": 28.0470
+    },
+    {
+        "city": "London",
+        "iso3": "GBR",
+        "latitude": 51.5090,
+        "longitude": -0.1180
+    },
+    {
+        "city": "Moscow",
+        "iso3": "RUS",
+        "latitude": 55.7550,
+        "longitude": 37.6200
+    },
+    {
+        "city": "Rome",
+        "iso3": "ITA",
+        "latitude": 41.8924,
+        "longitude": 12.4801
+    },
+    {
+        "city": "Dubai",
+        "iso3": "ARE",
+        "latitude": 25.2285,
+        "longitude": 55.2890
+    },
+    {
+        "city": "Delhi",
+        "iso3": "IND",
+        "latitude": 28.6517,
+        "longitude": 77.2219
+    },
+    {
+        "city": "Tokyo",
+        "iso3": "JPN",
+        "latitude": 35.6897,
+        "longitude": 139.7004
+    },
+    {
+        "city": "Beijing",
+        "iso3": "CHN",
+        "latitude": 39.9140,
+        "longitude": 116.4055
+    },
+    {
+        "city": "Jakarta",
+        "iso3": "IDN",
+        "latitude": -6.2080,
+        "longitude": 106.8450
+    },
+    {
+        "city": "Sydney",
+        "iso3": "AUS",
+        "latitude": -33.8700,
+        "longitude": 151.2099
+    }
+]
