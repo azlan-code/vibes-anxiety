@@ -15,5 +15,5 @@ type Coordinates struct {
 }
 
 type Client interface {
-	FetchCurrentWeatherData(ctx context.Context, coords []Coordinates) (*WeatherData, error)
+	FetchWeatherData(ctx context.Context, coords []Coordinates, pastDays int) ([]WeatherData, error)
 }

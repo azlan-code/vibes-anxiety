@@ -25,14 +25,14 @@ func NewHTTPClient() Client {
 
 type WeatherResponse struct {
 	Daily struct {
-		TempMax          []float64 `json:"temperature_2m_max"`
-		TempMin          []float64 `json:"temperature_2m_min"`
+		TempMax          []float64 `json:"apparent_temperature_max"`
+		TempMin          []float64 `json:"apparent_temperature_min"`
 		Pricipitation    []float64 `json:"precipitation_sum"`
 		SunshineDuration []float64 `json:"sunshine_duration"`
 	} `json:"daily"`
 }
 
-func (c *httpClient) FetchCurrentWeatherData(ctx context.Context, coords []Coordinates) (*WeatherData, error) {
+func (c *httpClient) FetchWeatherData(ctx context.Context, coords []Coordinates, pastDays int) ([]WeatherData, error) {
 	longitudes := make([]string, len(coords))
 	latitudes := make([]string, len(coords))
 	for i, c := range coords {
@@ -50,7 +50,7 @@ func (c *httpClient) FetchCurrentWeatherData(ctx context.Context, coords []Coord
 		"precipitation_sum",
 		"sunshine_duration",
 	}, ","))
-	q.Set("past_days", "30")
+	q.Set("past_days", strconv.Itoa(pastDays))
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
@@ -68,17 +68,20 @@ func (c *httpClient) FetchCurrentWeatherData(ctx context.Context, coords []Coord
 		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
 	}
 
-	fmt.Println(u.String())
-
-	var decoded WeatherResponse
+	var decoded []WeatherResponse
 	if err := json.NewDecoder(resp.Body).Decode(&decoded); err != nil {
 		return nil, err
 	}
 
-	return &WeatherData{
-		TempMax:          decoded.Daily.TempMax,
-		TempMin:          decoded.Daily.TempMin,
-		Pricipitation:    decoded.Daily.Pricipitation,
-		SunshineDuration: decoded.Daily.SunshineDuration,
-	}, nil
+	var results []WeatherData
+	for _, d := range decoded {
+		results = append(results, WeatherData{
+			TempMax:          d.Daily.TempMax,
+			TempMin:          d.Daily.TempMin,
+			Pricipitation:    d.Daily.Pricipitation,
+			SunshineDuration: d.Daily.SunshineDuration,
+		})
+	}
+
+	return results, nil
 }

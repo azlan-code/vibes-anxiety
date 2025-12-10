@@ -10,11 +10,12 @@ import (
 )
 
 type VibeRecord struct {
-	Longitude float64  `json:"longitude"` // Longitude coordinate
-	Latitude  float64  `json:"latitude"`  // Latitude coordinate
-	ISO3      string   `json:"iso3"`      // Country ISO3 code
-	Day       string   `json:"day"`       // YYYY-MM-DD
-	Score     *float64 `json:"score"`     // Vibe score
+	Longitude float64 `json:"longitude"` // Longitude coordinate
+	Latitude  float64 `json:"latitude"`  // Latitude coordinate
+	ISO3      string  `json:"iso3"`      // Country ISO3 code
+	City      string  `json:"city"`      // City name
+	Day       string  `json:"day"`       // YYYY-MM-DD
+	Score     float64 `json:"score"`     // Vibe score
 }
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -34,7 +35,7 @@ func (s *Server) TimelineHandler(w http.ResponseWriter, r *http.Request) {
 	thirtyDaysAgo := time.Now().AddDate(0, 0, -30).Format("2006-01-02")
 
 	query := `
-        SELECT coordinates[0] as longitude, coordinates[1] as latitude, iso3, day, score
+        SELECT coordinates[0] as longitude, coordinates[1] as latitude, iso3, city, day, score
         FROM location_vibes
         WHERE day >= $1
         ORDER BY iso3, day
@@ -50,7 +51,7 @@ func (s *Server) TimelineHandler(w http.ResponseWriter, r *http.Request) {
 	var records []VibeRecord
 	for rows.Next() {
 		var record VibeRecord
-		err := rows.Scan(&record.Longitude, &record.Latitude, &record.ISO3, &record.Day, &record.Score)
+		err := rows.Scan(&record.Longitude, &record.Latitude, &record.ISO3, &record.City, &record.Day, &record.Score)
 		if err != nil {
 			http.Error(w, "Error scanning row: "+err.Error(), http.StatusInternalServerError)
 			return
@@ -85,18 +86,18 @@ func (s *Server) VibePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if vibe.ISO3 == "" || vibe.Day == "" {
-		http.Error(w, "iso3 and day are required", http.StatusBadRequest)
+	if vibe.ISO3 == "" || vibe.Day == "" || vibe.City == "" {
+		http.Error(w, "iso3, city, and day are required", http.StatusBadRequest)
 		return
 	}
 
 	query := `
-        INSERT INTO location_vibes (iso3, coordinates, day, score)
-        VALUES ($1, POINT($2, $3), $4, $5)
+        INSERT INTO location_vibes (iso3, city, coordinates, day, score)
+        VALUES ($1, $2, POINT($3, $4), $5, $6)
         ON CONFLICT (coordinates, day) DO UPDATE SET score = EXCLUDED.score
     `
 
-	_, err = db.Exec(ctx, query, vibe.Longitude, vibe.Latitude, vibe.ISO3, vibe.Day, vibe.Score)
+	_, err = db.Exec(ctx, query, vibe.ISO3, vibe.City, vibe.Longitude, vibe.Latitude, vibe.Day, vibe.Score)
 	if err != nil {
 		http.Error(w, "Error inserting data: "+err.Error(), http.StatusInternalServerError)
 		return

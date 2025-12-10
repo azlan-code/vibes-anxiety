@@ -5,8 +5,9 @@ CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 CREATE TABLE IF NOT EXISTS location_vibes (
   iso3 TEXT NOT NULL,
   coordinates POINT NOT NULL,
+  city TEXT NOT NULL,
   day timestamptz NOT NULL,
-  score double precision,
+  score double precision NOT NULL,
   PRIMARY KEY (coordinates, day)
 );
 

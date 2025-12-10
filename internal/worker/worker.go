@@ -9,7 +9,7 @@ import (
 	"github.com/azlan-code/vibes-anxiety/internal/scorer"
 )
 
-func prepareScoringData(ctx context.Context, weatherClient weather.Client) (*scorer.ScoringData, error) {
+func prepareScoringData(ctx context.Context, weatherClient weather.Client, pastDays int) ([]scorer.ScoringData, error) {
 	locations, err := config.LoadLocations("config/locations.json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to load locations: %w", err)
@@ -23,30 +23,37 @@ func prepareScoringData(ctx context.Context, weatherClient weather.Client) (*sco
 		}
 	}
 
-	wd, err := weatherClient.FetchCurrentWeatherData(ctx, coords)
+	wd, err := weatherClient.FetchWeatherData(ctx, coords, pastDays)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch weather data: %w", err)
 	}
-	fmt.Println(wd)
 
-	scoringData := scorer.ScoringData{
-		Weather: wd,
-		// GPR: gprData,
-		// ... other integration data
+	var allScoringData []scorer.ScoringData
+	for i, loc := range locations {
+		allScoringData = append(allScoringData, scorer.ScoringData{
+			Country: loc.ISO3,
+			City:    loc.City,
+			Coordinates: weather.Coordinates{
+				Longitude: loc.Longitude,
+				Latitude:  loc.Latitude,
+			},
+			Weather: wd[i],
+		})
 	}
 
-	return &scoringData, nil
+	return allScoringData, nil
 }
 
-func CalculateVibeScore(ctx context.Context) error {
+func CalculateVibeScores(ctx context.Context, pastDays int) ([]scorer.ScoreResult, error) {
 	weatherClient := weather.NewHTTPClient()
-	scoringData, err := prepareScoringData(ctx, weatherClient)
+	allScoringData, err := prepareScoringData(ctx, weatherClient, pastDays)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	vibeScore := scorer.CalculateVibeScore(*scoringData)
-	fmt.Println(vibeScore)
+	vibeScores := scorer.CalculateVibeScores(allScoringData, pastDays)
+	// s, _ := json.MarshalIndent(vibeScores, "", "  ")
+	// fmt.Print(string(s))
 
-	return nil
+	return vibeScores, nil
 }
